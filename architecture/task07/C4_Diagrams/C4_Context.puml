@@ -1,0 +1,15 @@
+@startuml
+!NEW_C4_STYLE=1
+!theme C4_sandstone from <C4/themes>
+!include Templates/C4_Context.puml
+title "ADR-1 Выбор стратегии шардирования данных (контекст)"
+
+SHOW_PERSON_OUTLINE()
+
+Person(user, "User", "Клиент")
+System(shop_system, "Система магазина")
+
+Rel(user, shop_system, "Авторизуется, оформляет заказы, просматривает товары используя")
+
+@enduml
+
