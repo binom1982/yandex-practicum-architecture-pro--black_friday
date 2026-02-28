@@ -1,0 +1,55 @@
+@startuml
+!NEW_C4_STYLE=1
+!theme C4_sandstone from <C4/themes>
+!include Templates/C4_Container.puml
+title ADR-2 Выявление и устранение «горячих» шардов (контейнер)
+
+SHOW_PERSON_OUTLINE()
+LAYOUT_LANDSCAPE()
+
+
+Person(admin, "Администратор")
+
+System_Boundary(monitoring, "Система мониторинга") {
+    Container(exporter, "MongoDB Exporter", "Go", "Сбор метрик из /serverStatus и /metrics")
+    Container(prometheus, "Prometheus", "TSDB", "Хранение и агрегация метрик, правила алертинга")
+    Container(grafana, "Grafana", "UI", "Визуализация: ops/sec на шард, память, очередь")
+    Container(alertmanager, "AlertManager", "Routing", "Маршрутизация алертов в Slack/PagerDuty")
+}
+
+System_Boundary(mongodb, "Кластер MongoDB") {
+    Container(mongos, "Mongos", "Router", "Маршрутизация запросов, балансировка чанков")
+    
+    Container_Boundary(shard1, "Shard 01") {
+        ContainerDb(primary1, "Primary", "mongod", "Приём записи, обслуживание запросов")
+        ContainerDb(secondary1a, "Secondary A", "mongod", "Чтение, репликация")
+        ContainerDb(secondary1b, "Secondary B", "mongod", "Чтение, репликация")
+    }
+    
+    Container_Boundary(shard2, "Shard 02") {
+        ContainerDb(primary2, "Primary", "mongod", "Приём записи, обслуживание запросов")
+        ContainerDb(secondary2a, "Secondary A", "mongod", "Чтение, репликация")
+    }
+}
+
+Lay_D(admin, monitoring)
+Lay_R(monitoring, mongodb)
+
+Rel(admin, grafana, "Просматривает дашборды")
+Rel(admin, alertmanager, "Получает уведомления")
+Rel(exporter, mongos, "Сбор метрик: serverStatus")
+Rel(exporter, primary1, "Сбор метрик: serverStatus")
+Rel(exporter, primary2, "Сбор метрик: serverStatus")
+Rel(exporter, prometheus, "Отправка метрик")
+Rel(prometheus, alertmanager, "Генерация алертов при дисбалансе > 20%")
+Rel(alertmanager, admin, "Уведомление через Slack/PagerDuty")
+Rel(grafana, prometheus, "Запрос метрик")
+
+Rel(mongos, primary1, "Маршрутизация запросов")
+Rel(mongos, primary2, "Маршрутизация запросов")
+Rel(primary1, secondary1a, "Репликация oplog")
+Rel(primary1, secondary1b, "Репликация oplog")
+Rel(primary2, secondary2a, "Репликация oplog")
+
+@enduml
+

@@ -2,7 +2,7 @@
 !NEW_C4_STYLE=1
 !theme C4_sandstone from <C4/themes>
 !include Templates/C4_Context.puml
-title "ADR-1 Выбор стратегии шардирования данных (контекст)"
+title ADR-1 Выбор стратегии шардирования данных (контекст)
 
 SHOW_PERSON_OUTLINE()
 
