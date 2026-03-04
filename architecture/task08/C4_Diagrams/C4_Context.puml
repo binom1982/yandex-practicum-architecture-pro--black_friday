@@ -1,0 +1,43 @@
+@startuml
+!NEW_C4_STYLE=1
+!theme C4_sandstone from <C4/themes>
+!include Templates/C4_Context.puml
+title ADR-2 Выявление и устранение «горячих» шардов (контекст)
+
+SHOW_PERSON_OUTLINE()
+
+
+Person(admin, "Администратор", "Управляет кластером MongoDB, реагирует на алерты")
+Person(user, "Пользователь", "Использует")
+
+System_Boundary(app, "Application Layer") {
+    System(api, "API Gateway", "Маршрутизирует запросы к микросервисам")
+    System(monitoring, "Monitoring System", "Prometheus + Grafana + MongoDB Exporter")
+}
+
+System_Boundary(db, "MongoDB Sharded Cluster") {
+    System(mongos, "Mongos Router", "Точка входа для клиентов")
+    SystemDb(config, "Config Servers", "Метаданные кластера и чанков")
+    
+    System_Boundary(shards, "Shards") {
+        SystemDb(shard1, "Shard 01 (ReplicaSet)", "Часть данных products/orders")
+        SystemDb(shard2, "Shard 02 (ReplicaSet)", "Часть данных products/orders")
+        SystemDb(shard3, "Shard 03 (ReplicaSet)", "Часть данных products/orders")
+    }
+}
+
+Rel(admin, monitoring, "Настраивает алерты, просматривает дашборды")
+Rel(monitoring, mongos, "Снимает метрики /serverStatus")
+
+Rel(monitoring, shards, "Снимает метрики с каждого узла")
+
+Rel(user, api, "Отправляет запросы")
+Rel(api, mongos, "Проксирует запросы к БД")
+Rel(mongos, config, "Запрашивает метаданные чанков")
+Rel(mongos, shard1, "Маршрутизирует запросы")
+Rel(mongos, shard2, "Маршрутизирует запросы")
+Rel(mongos, shard3, "Маршрутизирует запросы")
+
+@enduml
+
+

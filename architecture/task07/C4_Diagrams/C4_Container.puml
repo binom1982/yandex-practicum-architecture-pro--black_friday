@@ -1,0 +1,32 @@
+@startuml
+!NEW_C4_STYLE=1
+!theme C4_sandstone from <C4/themes>
+!include Templates/C4_Container.puml
+title ADR-1 Выбор стратегии шардирования данных (контейнер)
+
+SHOW_PERSON_OUTLINE()
+
+Person(user, "User", "Клиент")
+
+System_Boundary(shop_system, "Система магазина") {
+    Container(orders_service, "Orders Service")
+    Container(products_service, "Products Service")
+    Container(carts_service, "Carts Service")
+    Container(authorization_service, "Authorization Service")
+}
+
+Rel(user, orders_service, "Оформляет заказ", "https")
+Rel(orders_service, products_service, "Списывает остатки", "https")
+Rel(orders_service, carts_service, "Отмечает корзину как заказанной", "https")
+Rel(user, orders_service, "Просматривает историю", "https")
+
+Rel(user, products_service, "Ищет и фильтрует товары", "https")
+Rel(user, products_service, "Просматривает описание товара", "https")
+
+Rel(user, carts_service, "Создает корзины", "https")
+Rel(user, carts_service, "Редактирует корзины", "https")
+Rel(user, authorization_service, "Пользователь авторизуется", "https")
+Rel(authorization_service, carts_service, "Сливает товары гостевой корзины в пользовательскую", "https")
+
+@enduml
+
