@@ -5,7 +5,7 @@
 Запускаем mongodb и приложение
 
 ```shell
-docker compose -f compose.yaml -f compose.redis.yaml up -d
+docker compose up -d
 ```
 
 Инициализация кеширование
@@ -25,7 +25,6 @@ docker compose -f compose.yaml -f compose.redis.yaml down -v
 ```shell
 docker exec -it redis redis-cli KEYS '*'
 ```
-
 
 ## Как проверить
 
